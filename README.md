@@ -1,224 +1,400 @@
-# 🚀 Express Template (Node.js + Sequelize + Zod)
+# 🔐 Vault Password Backend
 
-A clean, modern, and scalable **Express.js project template** built for real-world backend development.  
-This template follows a **modular structure**, supports **Sequelize ORM**, **Zod validation**, and includes helpers for clean response handling and validation.
+A secure password management backend API built with Node.js, Express, and Sequelize. This application provides robust encryption, user authentication, and password vault management capabilities.
 
----
+## ✨ Features
 
-## 🧱 Features
+- 🔒 **Secure Password Storage**: Passwords encrypted using AES-256-GCM with Argon2id key derivation
+- 👤 **User Authentication**: JWT-based authentication system
+- 📁 **Category Management**: Organize passwords into categories
+- 🔍 **Advanced Search & Filter**: Search and filter vault entries
+- 📊 **Audit Logs**: Track all vault operations (create, decrypt, delete)
+- 🛡️ **Security Best Practices**: 
+  - Argon2id for password hashing
+  - Master password encryption
+  - Salt-based encryption
+  - Rate limiting
+  - CORS protection
+- 📄 **Pagination Support**: Efficient data retrieval for large datasets
 
-✅ Modular architecture (controllers, routes, middlewares, utils)  
-✅ Sequelize ORM (with CLI migrations & models under `/db/`)  
-✅ Zod for schema-based validation  
-✅ Centralized API response formatter  
-✅ Error-handling middleware  
-✅ Environment variable configuration with `dotenv`  
-✅ Ready for REST API projects or as backend for fullstack apps  
+## 🚀 Tech Stack
 
----
+- **Runtime**: Node.js
+- **Framework**: Express.js
+- **Database**: PostgreSQL/MySQL (configurable via Sequelize)
+- **ORM**: Sequelize
+- **Authentication**: JWT (jsonwebtoken)
+- **Encryption**: 
+  - Argon2id for key derivation
+  - AES-256-GCM for password encryption
+- **Validation**: Zod
+- **Security**: bcrypt, express-rate-limit
+- **Utilities**: CUID for unique IDs
 
-## 📂 Folder Structure
+## 📋 Prerequisites
 
-```
+Before you begin, ensure you have the following installed:
+- **Node.js** (v14 or higher)
+- **npm** or **yarn** or **pnpm**
+- **PostgreSQL** or **MySQL** database
 
-express-template/
-├── src/
-│   ├── routes/                # Route definitions
-│   │   └── index.js
-│   ├── controllers/           # Controller logic
-│   │   └── example.controller.js
-│   ├── middlewares/           # Global middlewares
-│   ├── utils/                 # Helper functions (api, validation, etc.)
-│   │   ├── api.js
-│   │   └── validation.js
-│   └── config/
-│       └── config.js          # dotenv loader and config manager
-│
-├── db/
-│   ├── models/                # Sequelize models
-│   ├── migrations/            # Migration files
-│   ├── seeders/               # Seeder files
-│   └── config/config.json     # Sequelize DB config
-│
-├── .env.example               # Sample environment variables
-├── .sequelizerc               # Sequelize CLI paths configuration
-├── .gitignore
-├── package.json
-└── README.md
+## 🛠️ Installation
 
-````
+1. **Clone the repository**
+   ```bash
+   git clone https://github.com/rayhanzz772/password-vault-backend.git
+   cd password-vault-backend
+   ```
 
----
+2. **Install dependencies**
+   ```bash
+   npm install
+   # or
+   yarn install
+   # or
+   pnpm install
+   ```
 
-## ⚙️ Installation
+3. **Configure environment variables**
+   
+   Create a `.env` file in the root directory:
+   ```env
+   # Server Configuration
+   PORT=5000
+   NODE_ENV=development
 
-Clone the repository:
+   # Database Configuration
+   DB_CONNECTION=postgres  # or mysql
+   DB_HOST=localhost
+   DB_PORT=5432           # 5432 for PostgreSQL, 3306 for MySQL
+   DB_NAME=vault_password_db
+   DB_USER=your_db_user
+   DB_PASS=your_db_password
 
+   # JWT Configuration
+   JWT_SECRET=your_jwt_secret_key_here
+   JWT_EXPIRES_IN=7d
+
+   # Encryption (optional - for additional security)
+   ENCRYPTION_KEY=your_encryption_key_here
+   ```
+
+4. **Run database migrations**
+   ```bash
+   npx sequelize-cli db:migrate
+   ```
+
+5. **Seed database (optional)**
+   ```bash
+   npx sequelize-cli db:seed:all
+   ```
+
+## 🎯 Usage
+
+### Development Mode
 ```bash
-git clone https://github.com/rayhanzz772/express-template.git
-cd express-template
-````
+npm run dev
+```
+The server will start with nodemon and automatically restart on file changes.
 
-Install dependencies:
-
+### Production Mode
 ```bash
-npm install
+npm start
 ```
 
----
+The API will be available at `http://localhost:5000` (or your configured PORT).
 
-## 🧾 Environment Setup
+## 📚 API Documentation
 
-Create a `.env` file based on `.env.example`:
-
+### Base URL
 ```
-PORT=5000
-NODE_ENV=development
-
-DB_DIALECT=postgres
-DB_HOST=localhost
-DB_USER=postgres
-DB_PASS=123456
-DB_NAME=express_template
+http://localhost:5000
 ```
 
----
+### Authentication Endpoints
 
-## 🧩 Database Setup (Sequelize)
+#### Register User
+```http
+POST /auth/register
+Content-Type: application/json
 
-Initialize Sequelize project (if needed):
-
-```bash
-npx sequelize-cli init
+{
+  "email": "user@example.com",
+  "password": "securePassword123",
+  "name": "John Doe"
+}
 ```
 
-Run migrations:
+#### Login
+```http
+POST /auth/login
+Content-Type: application/json
 
-```bash
-npx sequelize-cli db:migrate
+{
+  "email": "user@example.com",
+  "password": "securePassword123"
+}
 ```
 
-Undo migration (optional):
+### Vault Password Endpoints
 
-```bash
-npx sequelize-cli db:migrate:undo
+All vault endpoints require authentication. Include the JWT token in the Authorization header:
+```
+Authorization: Bearer <your_jwt_token>
 ```
 
----
-
-## 🧠 Validation Example (Zod)
-
-Each request schema is defined using **Zod** for strict validation.
-
-Example:
-`src/modules/user/schema.js`
-
-```js
-const { z } = require('zod')
-
-const listSchema = z.object({
-  per_page: z.string().regex(/^\d+$/).transform(Number).optional(),
-  page: z.string().regex(/^\d+$/).transform(Number).optional(),
-  q: z.string().trim().optional().nullable()
-})
-
-module.exports = { listSchema }
+#### Get All Vault Passwords (with search & filter)
+```http
+GET /api/vault?search=gmail&category_id=cat123&limit=20&offset=0&sort_by=name&sort_order=ASC
 ```
 
-And used in controller:
+**Query Parameters:**
+- `search` (optional): Search in name, username, or note
+- `category_id` (optional): Filter by category
+- `limit` (optional): Number of results per page (default: 50)
+- `offset` (optional): Number of results to skip (default: 0)
+- `sort_by` (optional): Sort field - `created_at`, `updated_at`, `name`, `username` (default: `created_at`)
+- `sort_order` (optional): `ASC` or `DESC` (default: `DESC`)
 
-```js
-const { listSchema } = require('./schema')
-const { validateRequest } = require('../../utils/validation')
-
-const query = validateRequest(listSchema, req, 'query')
-```
-
----
-
-## 🧱 API Example
-
-### Controller
-
-```js
-static async getUser(req, res) {
-  try {
-    const query = validateRequest(listSchema, req, 'query')
-    const users = await db.User.findAll()
-    return res.status(200).json(api.results(users, 200))
-  } catch (err) {
-    console.error(err)
-    return res.status(500).json(api(null, 500, { err }))
+**Response:**
+```json
+{
+  "success": true,
+  "data": [
+    {
+      "id": "ckl123456",
+      "category_id": "cat123",
+      "category": "Social Media",
+      "name": "Gmail Account",
+      "username": "user@example.com",
+      "note": "Personal email",
+      "createdAt": "2025-11-05T10:30:00Z",
+      "updatedAt": "2025-11-05T10:30:00Z"
+    }
+  ],
+  "pagination": {
+    "total": 45,
+    "limit": 20,
+    "offset": 0,
+    "hasMore": true
+  },
+  "filters": {
+    "search": "gmail",
+    "category_id": "cat123"
   }
 }
 ```
 
-### Route
+#### Create Vault Password
+```http
+POST /api/vault
+Content-Type: application/json
+Authorization: Bearer <token>
 
-```js
-const router = require('express').Router()
-const UserController = require('../controllers/user.controller')
-
-router.get('/users', UserController.getUser)
-
-module.exports = router
+{
+  "name": "Gmail Account",
+  "username": "user@example.com",
+  "password": "mySecretPassword",
+  "master_password": "myMasterPassword",
+  "category_id": "cat123",
+  "note": "Personal email account"
+}
 ```
 
----
+#### Decrypt Vault Password
+```http
+POST /api/vault/:id/decrypt
+Content-Type: application/json
+Authorization: Bearer <token>
 
-## 🧰 Scripts
+{
+  "master_password": "myMasterPassword"
+}
+```
 
-| Command                             | Description                         |
-| ----------------------------------- | ----------------------------------- |
-| `npm run dev`                       | Run development server with Nodemon |
-| `npm start`                         | Run production server               |
-| `npx sequelize-cli db:migrate`      | Run all migrations                  |
-| `npx sequelize-cli db:seed:all`     | Run all seeders                     |
-| `npx sequelize-cli db:migrate:undo` | Rollback last migration             |
-
----
-
-## 🔒 API Response Format
-
-Unified JSON format via `api.results()` and `api()` helpers:
-
+**Response:**
 ```json
 {
   "success": true,
-  "message": "OK",
-  "metadata": {},
-  "data": { ... }
+  "data": {
+    "id": "ckl123456",
+    "name": "Gmail Account",
+    "username": "user@example.com",
+    "password": "mySecretPassword",
+    "note": "Personal email"
+  }
 }
 ```
 
-Error example:
+#### Delete Vault Password
+```http
+DELETE /api/vault/:id
+Authorization: Bearer <token>
+```
 
-```json
+### Category Endpoints
+
+#### Get All Categories
+```http
+GET /api/categories
+Authorization: Bearer <token>
+```
+
+#### Create Category
+```http
+POST /api/categories
+Content-Type: application/json
+Authorization: Bearer <token>
+
 {
-  "success": false,
-  "message": "Validation failed",
-  "metadata": {},
-  "data": null
+  "name": "Social Media",
+  "description": "Social media accounts"
 }
 ```
 
+### User Endpoints
+
+#### Get Current User
+```http
+GET /api/users/me
+Authorization: Bearer <token>
+```
+
+#### Update User Profile
+```http
+PUT /api/users/me
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "name": "John Doe Updated",
+  "email": "newemail@example.com"
+}
+```
+
+## 🗂️ Project Structure
+
+```
+vault-password-backend/
+├── config/
+│   └── config.js              # Database configuration
+├── db/
+│   ├── migrations/            # Database migrations
+│   ├── models/                # Sequelize models
+│   │   ├── user.js
+│   │   ├── vault_password.js
+│   │   ├── vault_log.js
+│   │   └── category.js
+│   └── seeders/               # Database seeders
+├── src/
+│   ├── middleware/
+│   │   └── authMiddleware.js  # JWT authentication middleware
+│   ├── modules/
+│   │   ├── auth/              # Authentication module
+│   │   ├── user/              # User management module
+│   │   ├── category/          # Category module
+│   │   └── vault-password/    # Vault password module
+│   ├── utils/
+│   │   ├── encryption.js      # Encryption utilities
+│   │   ├── jwt.js             # JWT utilities
+│   │   ├── bcrypt.js          # Password hashing
+│   │   └── validation.js      # Input validation
+│   └── routes.js              # Main route definitions
+├── index.js                   # Application entry point
+├── package.json
+├── .env.example
+├── .gitignore
+└── README.md
+```
+
+## 🔐 Security Features
+
+### Encryption Process
+1. **Master Password**: User provides a master password for encryption/decryption
+2. **Key Derivation**: Argon2id generates a cryptographic key from the master password
+3. **Encryption**: Password is encrypted using AES-256-GCM with a unique salt
+4. **Storage**: Only encrypted data and salt are stored in the database
+
+### Key Derivation Function (KDF)
+```javascript
+{
+  "kdf_type": "argon2id",
+  "kdf_params": {
+    "memoryCost": 65536,  // 64 MB
+    "timeCost": 3,        // 3 iterations
+    "parallelism": 1      // Single thread
+  }
+}
+```
+
+### Authentication
+- JWT tokens with configurable expiration
+- Bcrypt for user password hashing
+- Protected routes with middleware
+
+### Audit Trail
+All vault operations are logged:
+- Create: When a new password is added
+- Decrypt: When a password is viewed
+- Delete: When a password is removed
+
+## 🧪 Testing
+
+```bash
+# Run tests (if configured)
+npm test
+```
+
+## 📝 Database Migrations
+
+### Create a new migration
+```bash
+npx sequelize-cli migration:generate --name migration-name
+```
+
+### Run migrations
+```bash
+npx sequelize-cli db:migrate
+```
+
+### Undo last migration
+```bash
+npx sequelize-cli db:migrate:undo
+```
+
+### Undo all migrations
+```bash
+npx sequelize-cli db:migrate:undo:all
+```
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
+4. Push to the branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the ISC License.
+
+## 👨‍💻 Author
+
+**Rayhan**
+- GitHub: [@rayhanzz772](https://github.com/rayhanzz772)
+
+## 🙏 Acknowledgments
+
+- Express.js for the web framework
+- Sequelize for ORM
+- Argon2 for secure key derivation
+- JWT for authentication
+
+## 📞 Support
+
+For support, email your-email@example.com or open an issue in the repository.
+
 ---
 
-## 🧑‍💻 Author
-
-**Rayhan Z**
-Backend Developer | Node.js & Express Enthusiast
-🔗 [GitHub](https://github.com/rayhanzz772)
-
----
-
-## 🪄 License
-
-This project is licensed under the **MIT License**.
-Feel free to use and modify for your own backend projects.
-
----
-
-> 💡 *Tip:* Fork this repo as your boilerplate backend for all new projects — just replace `/modules` content with your own logic, and you’re ready to build production-grade APIs!
-
----
+Made with ❤️ by Rayhan
