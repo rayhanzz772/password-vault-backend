@@ -8,5 +8,7 @@ router.get("/status", (req, res) => {
 router.use("/users", require("./modules/user/index"));
 router.use("/categories", require("./modules/category/index"));
 router.use("/vault", require("./modules/vault-password/index"));
+router.use("/notes", require("./modules/secret-note/index"));
+router.use("/tags", require("./modules/tag/index"));
 
 module.exports = router;

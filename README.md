@@ -252,6 +252,82 @@ Authorization: Bearer <token>
 }
 ```
 
+### Tag Endpoints
+
+Tags help organize your secret notes. Supports bulk operations for efficient management.
+
+#### Get All Tags
+```http
+GET /api/tags?search=work&limit=20&offset=0
+Authorization: Bearer <token>
+```
+
+#### Create Single Tag
+```http
+POST /api/tags
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "name": "Important"
+}
+```
+
+#### Bulk Create Tags
+```http
+POST /api/tags/bulk
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "tags": ["Work", "Personal", "Important", "Urgent", "Archive"]
+}
+```
+
+**Response:**
+```json
+{
+  "success": true,
+  "message": "3 tags created successfully",
+  "data": {
+    "created": [...],
+    "skipped": [...],
+    "summary": {
+      "total": 5,
+      "created": 3,
+      "skipped": 2
+    }
+  }
+}
+```
+
+#### Bulk Update Tags
+```http
+PUT /api/tags/bulk
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "tags": [
+    { "id": "tag123", "name": "Work Projects" },
+    { "id": "tag124", "name": "Personal Notes" }
+  ]
+}
+```
+
+#### Bulk Delete Tags
+```http
+DELETE /api/tags/bulk
+Content-Type: application/json
+Authorization: Bearer <token>
+
+{
+  "ids": ["tag123", "tag124", "tag125"]
+}
+```
+
+> 📖 **See [TAGS_API.md](./TAGS_API.md) for complete tag API documentation**
+
 ### User Endpoints
 
 #### Get Current User
