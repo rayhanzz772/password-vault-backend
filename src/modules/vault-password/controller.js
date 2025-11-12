@@ -27,21 +27,19 @@ class Controller {
         parallelism: 1,
       };
 
-      const { data: encryptedPassword, salt } = await encrypt(password, master_password);
+      const encrypted = await encrypt(password, master_password);
 
       const item = await VaultPassword.create({
         user_id: userId,
         name,
         username,
-        password_encrypted: encryptedPassword,
-        salt,
+        password_encrypted: JSON.stringify(encrypted),
         category_id: category_id || null,
         note,
         kdf_type: kdfType,
         kdf_params: kdfParams
-      },
-        { transaction: t }
-      );
+      }, { transaction: t });
+
 
       if (!item) {
         throw new Error("Failed to create vault item");
@@ -172,7 +170,7 @@ class Controller {
         return res.status(404).json({ success: false, message: "Vault item not found" });
       }
 
-      const { kdf_type, kdf_params, salt } = item;
+      const { kdf_type, kdf_params } = item;
 
       if (kdf_type !== "argon2id") {
         return res.status(400).json({
@@ -181,7 +179,14 @@ class Controller {
         });
       }
 
-      const decrypted = await decrypt(item.password_encrypted, master_password, salt, kdf_params);
+      let encryptedObj;
+      try {
+        encryptedObj = JSON.parse(item.password_encrypted);
+      } catch {
+        throw new Error("Invalid encrypted data format");
+      }
+
+      const decrypted = await decrypt(encryptedObj, master_password, kdf_params);
 
       await VaultLog.create({
         user_id: userId,

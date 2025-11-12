@@ -27,10 +27,6 @@ module.exports = {
         type: Sequelize.TEXT,
         allowNull: false
       },
-      salt: {
-        type: Sequelize.STRING,
-        allowNull: false
-      },
       category_id: {
         type: Sequelize.STRING,
         allowNull: false,

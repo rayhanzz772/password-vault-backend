@@ -34,7 +34,6 @@ module.exports = (sequelize, DataTypes) => {
       category_id: { type: DataTypes.STRING, allowNull: true },
       title: { type: DataTypes.STRING, allowNull: false },
       note: { type: DataTypes.TEXT, allowNull: false },
-      salt: { type: DataTypes.TEXT, allowNull: true },
       kdf_type: {
         type: DataTypes.STRING,
         defaultValue: "argon2id",

@@ -32,7 +32,6 @@ module.exports = (sequelize, DataTypes) => {
       username: { type: DataTypes.TEXT },
       password_encrypted: { type: DataTypes.TEXT, allowNull: false },
       note: { type: DataTypes.TEXT, allowNull: true },
-      salt: { type: DataTypes.TEXT, allowNull: true },
       kdf_type: {
         type: DataTypes.STRING,
         defaultValue: "argon2id",

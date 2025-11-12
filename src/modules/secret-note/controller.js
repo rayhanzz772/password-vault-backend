@@ -26,13 +26,12 @@ class Controller {
         parallelism: 1,
       };
 
-      const { data: encryptedNote, salt } = await encrypt(note, master_password);
+      const encrypted = await encrypt(note, master_password);
 
       const item = await SecretNote.create({
         user_id: userId,
         title,
-        note: encryptedNote,
-        salt,
+        note: JSON.stringify(encrypted),
         category_id: category_id || null,
         kdf_type: kdfType,
         kdf_params: kdfParams
@@ -191,15 +190,29 @@ class Controller {
         return res.status(NOT_FOUND).json({ success: false, message: "Secret note not found" });
       }
 
-      const { kdf_type, kdf_params, salt } = notes[0];
+      const { kdf_type, kdf_params } = notes[0];
 
-      const decryptedNote = await decrypt(notes[0].note, master_password, salt, kdf_type, kdf_params);
+      if (kdf_type !== "argon2id") {
+        return res.status(400).json({
+          success: false,
+          message: `Unsupported KDF type: ${kdf_type}`,
+        });
+      }
+
+      let encryptedObj;
+      try {
+        encryptedObj = JSON.parse(notes[0].note);
+      } catch {
+        throw new Error("Invalid encrypted data format");
+      }
+
+      const decrypted = await decrypt(encryptedObj, master_password, kdf_params);
 
       const items = {
         id: notes[0].id,
         title: notes[0].title,
         tags: notes[0].tags,
-        note: decryptedNote
+        note: decrypted
       }
 
       return res.status(HTTP_OK).json(api.results(items, HTTP_OK, { req }))
