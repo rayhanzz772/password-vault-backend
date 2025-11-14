@@ -9,7 +9,7 @@ A secure password management backend API built with Node.js, Express, and Sequel
 - 📁 **Category Management**: Organize passwords into categories
 - 🔍 **Advanced Search & Filter**: Search and filter vault entries
 - 📊 **Audit Logs**: Track all vault operations (create, decrypt, delete)
-- 🛡️ **Security Best Practices**: 
+- 🛡️ **Security Best Practices**:
   - Argon2id for password hashing
   - Master password encryption
   - Salt-based encryption
@@ -24,7 +24,7 @@ A secure password management backend API built with Node.js, Express, and Sequel
 - **Database**: PostgreSQL/MySQL (configurable via Sequelize)
 - **ORM**: Sequelize
 - **Authentication**: JWT (jsonwebtoken)
-- **Encryption**: 
+- **Encryption**:
   - Argon2id for key derivation
   - AES-256-GCM for password encryption
 - **Validation**: Zod
@@ -34,6 +34,7 @@ A secure password management backend API built with Node.js, Express, and Sequel
 ## 📋 Prerequisites
 
 Before you begin, ensure you have the following installed:
+
 - **Node.js** (v14 or higher)
 - **npm** or **yarn** or **pnpm**
 - **PostgreSQL** or **MySQL** database
@@ -41,12 +42,14 @@ Before you begin, ensure you have the following installed:
 ## 🛠️ Installation
 
 1. **Clone the repository**
+
    ```bash
    git clone https://github.com/rayhanzz772/password-vault-backend.git
    cd password-vault-backend
    ```
 
 2. **Install dependencies**
+
    ```bash
    npm install
    # or
@@ -56,8 +59,9 @@ Before you begin, ensure you have the following installed:
    ```
 
 3. **Configure environment variables**
-   
+
    Create a `.env` file in the root directory:
+
    ```env
    # Server Configuration
    PORT=5000
@@ -80,6 +84,7 @@ Before you begin, ensure you have the following installed:
    ```
 
 4. **Run database migrations**
+
    ```bash
    npx sequelize-cli db:migrate
    ```
@@ -92,12 +97,15 @@ Before you begin, ensure you have the following installed:
 ## 🎯 Usage
 
 ### Development Mode
+
 ```bash
 npm run dev
 ```
+
 The server will start with nodemon and automatically restart on file changes.
 
 ### Production Mode
+
 ```bash
 npm start
 ```
@@ -107,6 +115,7 @@ The API will be available at `http://localhost:5000` (or your configured PORT).
 ## 📚 API Documentation
 
 ### Base URL
+
 ```
 http://localhost:5000
 ```
@@ -114,6 +123,7 @@ http://localhost:5000
 ### Authentication Endpoints
 
 #### Register User
+
 ```http
 POST /auth/register
 Content-Type: application/json
@@ -126,6 +136,7 @@ Content-Type: application/json
 ```
 
 #### Login
+
 ```http
 POST /auth/login
 Content-Type: application/json
@@ -139,16 +150,19 @@ Content-Type: application/json
 ### Vault Password Endpoints
 
 All vault endpoints require authentication. Include the JWT token in the Authorization header:
+
 ```
 Authorization: Bearer <your_jwt_token>
 ```
 
 #### Get All Vault Passwords (with search & filter)
+
 ```http
 GET /api/vault?search=gmail&category_id=cat123&limit=20&offset=0&sort_by=name&sort_order=ASC
 ```
 
 **Query Parameters:**
+
 - `search` (optional): Search in name, username, or note
 - `category_id` (optional): Filter by category
 - `limit` (optional): Number of results per page (default: 50)
@@ -157,6 +171,7 @@ GET /api/vault?search=gmail&category_id=cat123&limit=20&offset=0&sort_by=name&so
 - `sort_order` (optional): `ASC` or `DESC` (default: `DESC`)
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -186,6 +201,7 @@ GET /api/vault?search=gmail&category_id=cat123&limit=20&offset=0&sort_by=name&so
 ```
 
 #### Create Vault Password
+
 ```http
 POST /api/vault
 Content-Type: application/json
@@ -202,6 +218,7 @@ Authorization: Bearer <token>
 ```
 
 #### Decrypt Vault Password
+
 ```http
 POST /api/vault/:id/decrypt
 Content-Type: application/json
@@ -213,6 +230,7 @@ Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -227,6 +245,7 @@ Authorization: Bearer <token>
 ```
 
 #### Delete Vault Password
+
 ```http
 DELETE /api/vault/:id
 Authorization: Bearer <token>
@@ -235,12 +254,14 @@ Authorization: Bearer <token>
 ### Category Endpoints
 
 #### Get All Categories
+
 ```http
 GET /api/categories
 Authorization: Bearer <token>
 ```
 
 #### Create Category
+
 ```http
 POST /api/categories
 Content-Type: application/json
@@ -257,12 +278,14 @@ Authorization: Bearer <token>
 Tags help organize your secret notes. Supports bulk operations for efficient management.
 
 #### Get All Tags
+
 ```http
 GET /api/tags?search=work&limit=20&offset=0
 Authorization: Bearer <token>
 ```
 
 #### Create Single Tag
+
 ```http
 POST /api/tags
 Content-Type: application/json
@@ -274,6 +297,7 @@ Authorization: Bearer <token>
 ```
 
 #### Bulk Create Tags
+
 ```http
 POST /api/tags/bulk
 Content-Type: application/json
@@ -285,6 +309,7 @@ Authorization: Bearer <token>
 ```
 
 **Response:**
+
 ```json
 {
   "success": true,
@@ -302,6 +327,7 @@ Authorization: Bearer <token>
 ```
 
 #### Bulk Update Tags
+
 ```http
 PUT /api/tags/bulk
 Content-Type: application/json
@@ -316,6 +342,7 @@ Authorization: Bearer <token>
 ```
 
 #### Bulk Delete Tags
+
 ```http
 DELETE /api/tags/bulk
 Content-Type: application/json
@@ -331,12 +358,14 @@ Authorization: Bearer <token>
 ### User Endpoints
 
 #### Get Current User
+
 ```http
 GET /api/users/me
 Authorization: Bearer <token>
 ```
 
 #### Update User Profile
+
 ```http
 PUT /api/users/me
 Content-Type: application/json
@@ -386,12 +415,14 @@ vault-password-backend/
 ## 🔐 Security Features
 
 ### Encryption Process
+
 1. **Master Password**: User provides a master password for encryption/decryption
 2. **Key Derivation**: Argon2id generates a cryptographic key from the master password
 3. **Encryption**: Password is encrypted using AES-256-GCM with a unique salt
 4. **Storage**: Only encrypted data and salt are stored in the database
 
 ### Key Derivation Function (KDF)
+
 ```javascript
 {
   "kdf_type": "argon2id",
@@ -404,12 +435,15 @@ vault-password-backend/
 ```
 
 ### Authentication
+
 - JWT tokens with configurable expiration
 - Bcrypt for user password hashing
 - Protected routes with middleware
 
 ### Audit Trail
+
 All vault operations are logged:
+
 - Create: When a new password is added
 - Decrypt: When a password is viewed
 - Delete: When a password is removed
@@ -424,32 +458,84 @@ npm test
 ## 📝 Database Migrations
 
 ### Create a new migration
+
 ```bash
 npx sequelize-cli migration:generate --name migration-name
 ```
 
 ### Run migrations
+
 ```bash
 npx sequelize-cli db:migrate
 ```
 
 ### Undo last migration
+
 ```bash
 npx sequelize-cli db:migrate:undo
 ```
 
 ### Undo all migrations
+
 ```bash
 npx sequelize-cli db:migrate:undo:all
 ```
 
-## 🤝 Contributing
+## � Testing
+
+This project uses **Jest** for comprehensive testing, particularly for cryptographic utilities.
+
+### Quick Start
+
+```bash
+# Run all tests
+npm test
+
+# Run tests in watch mode
+npm run test:watch
+
+# Run tests with coverage report
+npm run test:coverage
+
+# Run only encryption tests
+npm run test:encryption
+```
+
+### Test Coverage
+
+The project includes 32+ comprehensive tests for encryption utilities covering:
+
+- ✅ Basic encryption/decryption functionality
+- ✅ Encrypted output structure validation
+- ✅ Custom KDF parameter handling
+- ✅ Password sensitivity and security
+- ✅ Error handling and edge cases
+- ✅ Additional Authenticated Data (AAD)
+- ✅ Performance benchmarks (< 200ms for encrypt/decrypt)
+- ✅ Real-world vault storage scenarios
+
+### Documentation
+
+- 📖 **[TESTING.md](./TESTING.md)** - Comprehensive testing guide with detailed explanations
+- 📋 **[TEST_QUICK_REFERENCE.md](./TEST_QUICK_REFERENCE.md)** - Quick command reference and cheat sheet
+
+### CI/CD Integration
+
+Tests automatically run on GitHub Actions for every push and pull request. See `.github/workflows/test.yml` for CI configuration.
+
+## �🤝 Contributing
 
 1. Fork the repository
 2. Create your feature branch (`git checkout -b feature/AmazingFeature`)
 3. Commit your changes (`git commit -m 'Add some AmazingFeature'`)
 4. Push to the branch (`git push origin feature/AmazingFeature`)
 5. Open a Pull Request
+
+**Before submitting a PR**, please ensure:
+
+- All tests pass (`npm test`)
+- Code coverage remains high (`npm run test:coverage`)
+- New features include corresponding tests
 
 ## 📄 License
 
@@ -458,6 +544,7 @@ This project is licensed under the ISC License.
 ## 👨‍💻 Author
 
 **Rayhan**
+
 - GitHub: [@rayhanzz772](https://github.com/rayhanzz772)
 
 ## 🙏 Acknowledgments

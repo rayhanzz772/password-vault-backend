@@ -78,6 +78,20 @@ coverage/
 TEST*.xml
 
 # ===================================
+# Testing & Coverage
+# ===================================
+
+coverage/
+.nyc_output/
+*.lcov
+TEST*.xml
+test-results.json
+coverage.json
+
+# Jest cache
+.jest/
+
+# ===================================
 # IDE & Editors
 # ===================================
 
