@@ -282,6 +282,19 @@ class Controller {
       const { title, note, master_password, category_id, tags = [] } = req.body
       const userId = req.user.userId
 
+      // First, fetch the item to verify it exists and get KDF params
+      const item = await SecretNote.findOne({
+        where: { id, user_id: userId, deleted_at: null },
+        transaction: t
+      })
+
+      if (!item) {
+        await t.rollback()
+        return res
+          .status(NOT_FOUND)
+          .json({ success: false, message: 'Secret note not found' })
+      }
+
       const updateData = {}
 
       if (title) updateData.title = title
@@ -289,22 +302,13 @@ class Controller {
 
       if (note) {
         if (!master_password) {
+          await t.rollback()
           return res
             .status(BAD_REQUEST)
             .json({
               success: false,
               message: 'Master password required for encryption'
             })
-        }
-
-        const item = await SecretNote.findOne({
-          where: { id, user_id: userId, deleted_at: null }
-        })
-
-        if (!item) {
-          return res
-            .status(NOT_FOUND)
-            .json({ success: false, message: 'Secret note not found' })
         }
 
         const kdfParams = item.kdf_params || {
@@ -314,28 +318,31 @@ class Controller {
         }
 
         const encryptionResult = await encrypt(note, master_password, kdfParams)
-        updateData.note = JSON.stringify(encryptionResult)
+        const encryptedJson = JSON.stringify(encryptionResult)
+        
+        // ✅ FIX: Use raw query to avoid PostgreSQL JSONB/TEXT type conversion issues
+        await db.sequelize.query(
+          `UPDATE secret_notes 
+           SET note = :note, updated_at = CURRENT_TIMESTAMP
+           WHERE id = :id AND user_id = :userId AND deleted_at IS NULL`,
+          {
+            replacements: {
+              note: encryptedJson,
+              id,
+              userId
+            },
+            type: db.sequelize.QueryTypes.UPDATE,
+            transaction: t
+          }
+        )
+        
+        console.log('✅ Note encrypted and updated successfully (raw query)')
       }
 
-      const [updatedRows] = await SecretNote.update(updateData, {
-        where: { id, user_id: userId, deleted_at: null },
-        transaction: t
-      })
-
-      if (updatedRows === 0) {
-        await t.rollback()
-        return res
-          .status(NOT_FOUND)
-          .json({
-            success: false,
-            message: 'Secret note not found or already deleted'
-          })
+      // Update other fields using Sequelize ORM
+      if (title || category_id !== undefined) {
+        await item.update(updateData, { transaction: t })
       }
-
-      const item = await SecretNote.findOne({
-        where: { id, user_id: userId },
-        transaction: t
-      })
 
       if (tags.length > 0) {
         const tagRecords = []

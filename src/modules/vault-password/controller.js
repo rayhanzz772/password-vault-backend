@@ -236,11 +236,16 @@ class Controller {
       const userId = req.user.userId
 
       const item = await VaultPassword.findOne({
-        where: { id, user_id: userId }
+        where: { id, user_id: userId },
+        transaction: t
       })
-      if (!item) throw new Error('Vault item not found')
+      if (!item) {
+        await t.rollback()
+        throw new Error('Vault item not found')
+      }
 
       if (password && !master_password) {
+        await t.rollback()
         throw new Error('Master password required for encryption')
       }
 
@@ -257,6 +262,24 @@ class Controller {
           kdfParams
         )
         encryptedPassword = JSON.stringify(encryptionResult)
+        
+        // ✅ FIX: Use raw query to avoid PostgreSQL type conversion issues
+        await db.sequelize.query(
+          `UPDATE vault_passwords 
+           SET password_encrypted = :password_encrypted, updated_at = CURRENT_TIMESTAMP
+           WHERE id = :id AND user_id = :userId`,
+          {
+            replacements: {
+              password_encrypted: encryptedPassword,
+              id,
+              userId
+            },
+            type: db.sequelize.QueryTypes.UPDATE,
+            transaction: t
+          }
+        )
+        
+        console.log('✅ Password encrypted and updated successfully (raw query)')
       }
 
       let categoryRecord = null
@@ -264,19 +287,22 @@ class Controller {
         categoryRecord = await db.Category.findOne({
           where: { name: category }
         })
-        if (!categoryRecord) throw new Error(`Category '${category}' not found`)
+        if (!categoryRecord) {
+          await t.rollback()
+          throw new Error(`Category '${category}' not found`)
+        }
       }
 
-      await item.update(
-        {
-          name: name ?? item.name,
-          username: username ?? item.username,
-          password_encrypted: encryptedPassword ?? item.password_encrypted,
-          category_id: categoryRecord ? categoryRecord.id : item.category_id,
-          note: note ?? item.note
-        },
-        { transaction: t }
-      )
+      // Update other fields using Sequelize ORM
+      const updateData = {}
+      if (name) updateData.name = name
+      if (username !== undefined) updateData.username = username
+      if (note !== undefined) updateData.note = note
+      if (categoryRecord) updateData.category_id = categoryRecord.id
+
+      if (Object.keys(updateData).length > 0) {
+        await item.update(updateData, { transaction: t })
+      }
 
       await VaultLog.create(
         {
