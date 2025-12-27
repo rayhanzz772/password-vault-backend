@@ -337,6 +337,17 @@ class Controller {
 
       await item.destroy()
 
+      await db.sequelize.query(
+        `
+        DELETE FROM favorites
+        WHERE target_id = :id AND type = 'password' AND user_id = :userId
+        `,
+        {
+          replacements: { id, userId },
+          type: db.Sequelize.QueryTypes.DELETE
+        }
+      )
+
       if (item && item.id) {
         await VaultLog.create({
           user_id: userId,

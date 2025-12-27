@@ -251,6 +251,17 @@ class Controller {
         }
       )
 
+      await db.sequelize.query(
+        `
+        DELETE FROM favorites
+        WHERE target_id = :id AND type = 'note' AND user_id = :userId
+        `,
+        {
+          replacements: { id, userId },
+          type: db.Sequelize.QueryTypes.DELETE
+        }
+      )
+
       if (result[0] === 0) {
         return res.status(NOT_FOUND).json({
           success: false,
