@@ -4,7 +4,7 @@ const argon2 = require('argon2')
 const ALGORITHM = 'aes-256-gcm'
 
 async function deriveKey(masterPassword, salt, params = {}) {
-  const hash = await argon2.hash(masterPassword, {
+  return argon2.hash(masterPassword, {
     type: argon2.argon2id,
     memoryCost: params.memoryCost || 2 ** 16,
     timeCost: params.timeCost || 3,
@@ -13,7 +13,6 @@ async function deriveKey(masterPassword, salt, params = {}) {
     raw: true,
     salt: Buffer.from(salt, 'hex')
   })
-  return crypto.createHash('sha256').update(hash).digest()
 }
 
 exports.encrypt = async (
