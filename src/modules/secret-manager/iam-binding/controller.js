@@ -1,5 +1,7 @@
 const cuid = require('cuid')
 const api = require('../../../utils/api')
+const HttpStatusCode = require('axios')
+const HTTP_OK = HttpStatusCode?.Ok || 200
 
 async function createBinding(req, res) {
   const { IamBinding, ServiceAccount, Secret } = req.models
@@ -46,7 +48,7 @@ async function createBinding(req, res) {
     })
   }
 
-  const binding = await IamBinding.create({
+  await IamBinding.create({
     id: cuid(),
     subject_type: 'service_account',
     subject_id: service_account_id,
@@ -71,23 +73,7 @@ async function listBindings(req, res) {
     order: [['created_at', 'DESC']]
   })
 
-  return res.status(HTTP_OK).json(api.results(null, HTTP_OK, { req }))
-}
-
-async function listBindings(req, res) {
-  const { IamBinding } = req.models
-  const { subject_id, resource_id } = req.query
-
-  const where = {}
-  if (subject_id) where.subject_id = subject_id
-  if (resource_id) where.resource_id = resource_id
-
-  const items = await IamBinding.findAll({
-    where,
-    order: [['created_at', 'DESC']]
-  })
-
-  return res.status(HTTP_OK).json(api.results(null, HTTP_OK, { req }))
+  return res.status(HTTP_OK).json(api.results(items, HTTP_OK, { req }))
 }
 
 async function deleteBinding(req, res) {

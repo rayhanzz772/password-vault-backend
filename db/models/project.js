@@ -14,6 +14,10 @@ module.exports = (sequelize, DataTypes) => {
         foreignKey: 'project_id',
         as: 'serviceAccounts'
       })
+      Project.belongsTo(models.User, {
+        foreignKey: 'owner_id',
+        as: 'owner'
+      })
     }
   }
 
@@ -28,10 +32,28 @@ module.exports = (sequelize, DataTypes) => {
         type: DataTypes.STRING,
         allowNull: false
       },
+      owner_id: {
+        type: DataTypes.STRING,
+        allowNull: true,
+        references: {
+          model: 'users',
+          key: 'id'
+        }
+      },
       slug: {
         type: DataTypes.STRING,
         allowNull: false,
         unique: true
+      },
+      created_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
+      },
+      updated_at: {
+        type: DataTypes.DATE,
+        allowNull: false,
+        defaultValue: DataTypes.NOW
       }
     },
     {

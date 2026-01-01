@@ -2,13 +2,15 @@ const crypto = require('crypto')
 const cuid = require('cuid')
 const slugify = require('slugify')
 const api = require('../../../utils/api')
+const HttpStatusCode = require('axios')
+const HTTP_OK = HttpStatusCode?.Ok || 200
 
 async function listServiceAccounts(req, res) {
   const { ServiceAccount } = req.models
   const { project_id } = req.params
 
   const items = await ServiceAccount.findAll({
-    where: { project_id },
+    where: { project_id, status: 'active' },
     attributes: ['id', 'client_id', 'status', 'created_at'],
     order: [['created_at', 'DESC']]
   })
@@ -55,7 +57,18 @@ async function createServiceAccount(req, res) {
     status: 'active'
   })
 
-  return res.status(HTTP_OK).json(api.results(null, HTTP_OK, { req }))
+  return res.status(HTTP_OK).json(
+    api.results(
+      {
+        id: sa.id,
+        client_id: sa.client_id,
+        created_at: sa.created_at,
+        private_key: privateKey
+      },
+      HTTP_OK,
+      { req }
+    )
+  )
 }
 
 async function deleteServiceAccount(req, res) {
@@ -66,7 +79,7 @@ async function deleteServiceAccount(req, res) {
   if (!sa) return res.status(404).json({ message: 'Not found' })
 
   await sa.update({ status: 'disabled' })
-
+  await sa.update({ deleted_at: new Date() })
   return res.status(HTTP_OK).json(api.results(null, HTTP_OK, { req }))
 }
 

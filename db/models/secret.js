@@ -43,6 +43,10 @@ module.exports = (sequelize, DataTypes) => {
       created_by: {
         type: DataTypes.STRING,
         allowNull: true
+      },
+      deleted_at: {
+        type: DataTypes.DATE,
+        allowNull: true
       }
     },
     {
@@ -51,6 +55,7 @@ module.exports = (sequelize, DataTypes) => {
       tableName: 'secrets',
       timestamps: true,
       underscored: true,
+      paranoid: true,
       indexes: [
         {
           unique: true,

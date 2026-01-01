@@ -12,6 +12,16 @@ module.exports = {
         type: Sequelize.STRING(120),
         allowNull: false
       },
+      owner_id: {
+        type: Sequelize.STRING,
+        allowNull: true,
+        references: {
+          model: 'users',
+          key: 'id',
+          onUpdate: 'CASCADE',
+          onDelete: 'SET NULL'
+        }
+      },
       slug: {
         type: Sequelize.STRING(120),
         allowNull: true

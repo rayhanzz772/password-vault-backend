@@ -3,7 +3,11 @@ const router = express.Router()
 const validateRequest = require('../../../middleware/validateRequest')
 const { createSecretVersionSchema, secretParamsSchema } = require('./schema')
 
-const { createSecretVersion, listSecretVersions } = require('./controller')
+const {
+  createSecretVersion,
+  listSecretVersions,
+  updateStatus
+} = require('./controller')
 
 router.post(
   '/:secret_id/create',
@@ -15,7 +19,7 @@ router.post(
 )
 
 router.get(
-  '/:secret_id/list',
+  '/:secret_id/',
   validateRequest({ params: secretParamsSchema }),
   listSecretVersions
 )

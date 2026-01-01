@@ -7,7 +7,7 @@ const HTTP_OK = HttpStatusCode?.Ok || 200
 async function createSecretVersion(req, res) {
   const { Secret, SecretVersion } = req.models
   const { secret_id } = req.params
-  const { plain_text } = req.body
+  const { plaintext } = req.body
 
   const secret = await Secret.findByPk(secret_id)
   if (!secret || secret.status !== 'active') {
@@ -23,7 +23,7 @@ async function createSecretVersion(req, res) {
 
   const nextVersion = latest ? latest.version + 1 : 1
 
-  const encrypted = encryptSecret(plain_text)
+  const encrypted = encryptSecret(plaintext)
 
   if (latest) {
     await SecretVersion.update(
@@ -32,7 +32,7 @@ async function createSecretVersion(req, res) {
     )
   }
 
-  const version = await SecretVersion.create({
+  await SecretVersion.create({
     id: cuid(),
     secret_id,
     version: nextVersion,

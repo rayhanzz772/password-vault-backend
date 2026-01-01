@@ -24,7 +24,7 @@ router.post(
 )
 
 router.get(
-  '/:project_id/list',
+  '/:project_id/',
   validateRequest({ params: projectParamsSchema }),
   listServiceAccounts
 )

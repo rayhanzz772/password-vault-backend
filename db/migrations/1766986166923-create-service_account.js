@@ -42,11 +42,15 @@ module.exports = {
       updated_at: {
         type: Sequelize.DATE,
         allowNull: false
+      },
+      deleted_at: {
+        type: Sequelize.DATE,
+        allowNull: true
       }
     })
   },
 
   async down(queryInterface, Sequelize) {
-    await queryInterface.dropTable('service_accounts ')
+    await queryInterface.dropTable('service_accounts')
   }
 }

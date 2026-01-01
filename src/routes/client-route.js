@@ -15,17 +15,26 @@ router.use(
   '/latest-secret',
   require('../modules/secret-manager/latest-secret/index')
 )
-router.use('/project-secret', require('../modules/secret-manager/project'))
+
+router.use(
+  '/project-secret',
+  authMiddleware,
+  require('../modules/secret-manager/project')
+)
 
 router.use(
   '/service-account',
   require('../modules/secret-manager/service-account/index')
 )
 
-router.use('/secret', require('../modules/secret-manager/secret/index'))
+router.use(
+  '/secret',
+  authMiddleware,
+  require('../modules/secret-manager/secret/index')
+)
 
 router.use(
-  '/service-version',
+  '/secret-version',
   require('../modules/secret-manager/secret-version/index')
 )
 
