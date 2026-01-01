@@ -7,9 +7,9 @@ const { checkPasswordBreach } = require('../../utils/pwnedCheck')
 
 exports.login = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { email, master_password } = req.body
 
-    const { token, user } = await authService.login(email, password)
+    const { token, user } = await authService.login(email, master_password)
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -37,12 +37,12 @@ exports.login = async (req, res) => {
 
 exports.register = async (req, res) => {
   try {
-    const { email, password } = req.body
+    const { email, master_password } = req.body
 
-    if (!email || !password) {
+    if (!email || !master_password) {
       return res.status(400).json({
         success: false,
-        message: 'Email and password are required'
+        message: 'Email and master_password are required'
       })
     }
 
@@ -55,7 +55,7 @@ exports.register = async (req, res) => {
       })
     }
 
-    const breachCount = await checkPasswordBreach(password)
+    const breachCount = await checkPasswordBreach(master_password)
     if (breachCount > 0) {
       return res.status(400).json({
         success: false,
@@ -65,7 +65,7 @@ exports.register = async (req, res) => {
 
     // Hash master password sebelum disimpan
     const saltRounds = 12
-    const hash = await bcrypt.hash(password, saltRounds)
+    const hash = await bcrypt.hash(master_password, saltRounds)
 
     // Simpan ke database
     const user = await User.create({
